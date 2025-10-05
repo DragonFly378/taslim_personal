@@ -1,0 +1,198 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light mode - Islamic Theme */
+    --background: 150 40% 97%;          /* #DDF4E7 - Light mint */
+    --foreground: 200 80% 19%;          /* #0c4259 - Deep teal blue */
+
+    --card: 0 0% 100%;                  /* White cards */
+    --card-foreground: 200 80% 19%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 200 80% 19%;
+
+    --primary: 200 80% 19%;             /* #0c4259 - Deep teal blue */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 150 50% 58%;           /* #67C090 - Emerald green */
+    --secondary-foreground: 0 0% 100%;
+
+    --accent: 200 80% 19%;              /* #0c4259 - Deep teal blue */
+    --accent-foreground: 0 0% 100%;
+
+    --muted: 150 40% 95%;               /* Light mint muted */
+    --muted-foreground: 200 40% 40%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 150 30% 85%;              /* Soft mint border */
+    --input: 150 30% 90%;
+    --ring: 200 80% 19%;
+
+    --radius: 0.75rem;                  /* Rounded corners */
+  }
+
+  .dark {
+    /* Dark mode - Islamic Night Theme */
+    --background: 200 60% 8%;           /* Deep navy background */
+    --foreground: 150 40% 95%;
+
+    --card: 200 55% 12%;                /* Darker navy cards */
+    --card-foreground: 150 40% 95%;
+
+    --popover: 200 55% 12%;
+    --popover-foreground: 150 40% 95%;
+
+    --primary: 200 80% 30%;             /* #0c4259 - Lighter in dark mode */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 150 50% 58%;           /* #67C090 - Emerald green */
+    --secondary-foreground: 200 65% 10%;
+
+    --accent: 200 80% 30%;
+    --accent-foreground: 0 0% 100%;
+
+    --muted: 200 50% 15%;
+    --muted-foreground: 195 20% 65%;
+
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 200 40% 20%;
+    --input: 200 40% 20%;
+    --ring: 200 80% 30%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "liga" 1, "calt" 1;
+  }
+}
+
+/* Arabic Font Configuration */
+@font-face {
+  font-family: 'Arabic';
+  src: local('Traditional Arabic'), local('Amiri'), local('Scheherazade New'), local('Scheherazade'), local('Noto Naskh Arabic'), local('Arial');
+  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+  font-display: swap;
+}
+
+.font-arabic {
+  font-family: 'Arabic', 'Amiri', 'Scheherazade New', 'Traditional Arabic', 'Noto Naskh Arabic', serif;
+  font-weight: 400;
+  line-height: 2;
+  letter-spacing: 0;
+  font-feature-settings: 'liga' 1, 'calt' 1, 'kern' 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Custom Utilities */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent;
+  }
+
+  .gradient-bg {
+    @apply bg-gradient-to-br from-primary/10 via-background to-secondary/10;
+  }
+
+  .card-glow {
+    @apply shadow-lg shadow-primary/5 hover:shadow-xl hover:shadow-primary/10 transition-shadow duration-300;
+  }
+
+  .islamic-pattern {
+    background-image:
+      repeating-linear-gradient(45deg, transparent, transparent 10px, hsl(var(--primary) / 0.02) 10px, hsl(var(--primary) / 0.02) 20px),
+      repeating-linear-gradient(-45deg, transparent, transparent 10px, hsl(var(--secondary) / 0.02) 10px, hsl(var(--secondary) / 0.02) 20px);
+  }
+}
+
+/* Prevent Layout Shift - Reserve space for scrollbar */
+html {
+  scrollbar-gutter: stable;
+  overflow-y: scroll;
+}
+
+/* Modern browsers: use scrollbar-gutter only */
+@supports (scrollbar-gutter: stable) {
+  html {
+    overflow-y: auto;
+  }
+}
+
+/* Smooth Scrolling */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Custom Scrollbar */
+@layer base {
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-muted;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary/30 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary/50;
+  }
+}
+
+/* Focus Visible Styles */
+@layer base {
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+/* Custom Animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 1s ease-out;
+}
+
+.delay-200 {
+  animation-delay: 200ms;
+}
+
+.delay-500 {
+  animation-delay: 500ms;
+}
+
+.delay-1000 {
+  animation-delay: 1000ms;
+}

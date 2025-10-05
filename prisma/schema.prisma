@@ -1,0 +1,212 @@
+// Prisma schema for Taslim - Quran & Duas App
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// QURAN MODELS
+// ============================================
+
+model Surah {
+  id             Int      @id @default(autoincrement())
+  surahNumber    Int      @unique // 1-114
+  latinName      String   @db.VarChar(100)
+  arabicName     String   @db.VarChar(100)
+  translationId  String?  @db.VarChar(200)
+  translationEn  String?  @db.VarChar(200)
+  revelationPlace String  @db.VarChar(20) // "Makkah" or "Madinah"
+  ayahCount      Int
+  createdAt      DateTime @default(now())
+
+  ayahs          Ayah[]
+
+  @@index([surahNumber])
+}
+
+model Ayah {
+  id             Int      @id @default(autoincrement())
+  surahId        Int
+  numberInSurah  Int
+  arabicText     String   @db.Text
+  juz            Int?
+  page           Int?
+  createdAt      DateTime @default(now())
+
+  surah          Surah    @relation(fields: [surahId], references: [id], onDelete: Cascade)
+  translations   AyahTranslation[]
+
+  @@unique([surahId, numberInSurah])
+  @@index([surahId, numberInSurah])
+  @@index([juz])
+  @@index([page])
+}
+
+model Translation {
+  id             String   @id @db.VarChar(50) // e.g., "id-kemenag", "en-sahih"
+  language       String   @db.VarChar(10) // "id", "en"
+  sourceName     String   @db.VarChar(200)
+  sourceUrl      String?  @db.VarChar(500)
+  copyright      String?  @db.Text
+  createdAt      DateTime @default(now())
+
+  ayahTranslations AyahTranslation[]
+
+  @@index([language])
+}
+
+model AyahTranslation {
+  id             Int      @id @default(autoincrement())
+  ayahId         Int
+  translationId  String   @db.VarChar(50)
+  text           String   @db.Text
+
+  ayah           Ayah         @relation(fields: [ayahId], references: [id], onDelete: Cascade)
+  translation    Translation  @relation(fields: [translationId], references: [id], onDelete: Cascade)
+
+  @@unique([ayahId, translationId])
+  @@index([ayahId])
+  @@index([translationId])
+}
+
+// ============================================
+// DUA MODELS
+// ============================================
+
+model DuaCategory {
+  id        Int      @id @default(autoincrement())
+  nameEn    String   @db.VarChar(200)
+  nameId    String   @db.VarChar(200)
+  slug      String   @unique @db.VarChar(100)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  duas      Dua[]
+
+  @@index([order])
+  @@index([slug])
+}
+
+model Dua {
+  id             Int      @id @default(autoincrement())
+  categoryId     Int
+  titleEn        String   @db.VarChar(300)
+  titleId        String   @db.VarChar(300)
+  arabicText     String   @db.Text
+  transliteration String? @db.Text
+  meaningEn      String   @db.Text
+  meaningId      String   @db.Text
+  reference      String?  @db.VarChar(500)
+  order          Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  category       DuaCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@index([categoryId])
+  @@index([order])
+}
+
+// ============================================
+// USER & AUTH MODELS (NextAuth)
+// ============================================
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  bookmarks     Bookmark[]
+  lastReads     LastRead[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ============================================
+// BOOKMARK & LAST READ MODELS
+// ============================================
+
+enum BookmarkType {
+  AYAH
+  DUA
+}
+
+model Bookmark {
+  id        Int          @id @default(autoincrement())
+  userId    String
+  type      BookmarkType
+  refId     Int          // ayahId or duaId
+  createdAt DateTime     @default(now())
+
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type, refId])
+  @@index([userId, type])
+  @@index([refId])
+}
+
+enum LastReadType {
+  QURAN
+  DUA
+}
+
+model LastRead {
+  id          Int          @id @default(autoincrement())
+  userId      String
+  type        LastReadType
+  surahId     Int?
+  ayahNumber  Int?
+  duaId       Int?
+  updatedAt   DateTime     @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type])
+  @@index([userId])
+}
