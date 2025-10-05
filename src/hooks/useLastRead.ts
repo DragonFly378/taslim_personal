@@ -31,7 +31,7 @@ export function useLastRead(type: LastReadType) {
   const { toast } = useToast()
   const [lastRead, setLastRead] = useState<LastRead | LocalLastRead | null>(null)
   const [loading, setLoading] = useState(true)
-  const updateTimeoutRef = useRef<NodeJS.Timeout>()
+  const updateTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
   // Load guest last read from localStorage
   useEffect(() => {
@@ -236,7 +236,7 @@ export function useLastReadObserver(
   type: LastReadType,
   onVisible: (data: { surahId?: number; ayahNumber?: number; duaId?: number }) => void
 ) {
-  const observerRef = useRef<IntersectionObserver>()
+  const observerRef = useRef<IntersectionObserver | undefined>(undefined)
 
   const observe = useCallback((element: HTMLElement, data: {
     surahId?: number

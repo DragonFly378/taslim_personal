@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { use, useState, useEffect } from 'react'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { DuaCard } from '@/components/DuaCard'
@@ -20,8 +20,9 @@ interface Dua {
   tag: string[]
 }
 
-export default function DuaCategoryPage({ params }: { params: { slug: string } }) {
+export default function DuaCategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { t } = useLanguage()
+  const resolvedParams = use(params)
   const [categoryDuas, setCategoryDuas] = useState<Dua[]>([])
   const [categoryName, setCategoryName] = useState('')
   const [loading, setLoading] = useState(true)
@@ -38,7 +39,7 @@ export default function DuaCategoryPage({ params }: { params: { slug: string } }
 
         // Filter duas by category slug
         const filtered = allDuas.filter(dua =>
-          dua.grup.toLowerCase().replace(/\s+/g, '-') === params.slug
+          dua.grup.toLowerCase().replace(/\s+/g, '-') === resolvedParams.slug
         )
 
         if (filtered.length === 0) {
@@ -54,7 +55,7 @@ export default function DuaCategoryPage({ params }: { params: { slug: string } }
       }
     }
     loadCategoryDuas()
-  }, [params.slug])
+  }, [resolvedParams.slug])
 
   return (
     <div>

@@ -39,7 +39,7 @@ export function BookmarkButton({ type, refId, isBookmarked, onToggle }: Bookmark
         if (isBookmarked) {
           removeGuestBookmark(type, refId)
         } else {
-          addGuestBookmark({ type, refId, createdAt: new Date().toISOString() })
+          addGuestBookmark({ type, refId })
         }
       }
 
