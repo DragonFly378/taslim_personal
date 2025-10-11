@@ -11,12 +11,16 @@ export interface Bookmark {
   userId: string
   type: BookmarkType
   refId: number
+  summary?: string | null
+  url?: string | null
   createdAt: string
 }
 
 interface LocalBookmark {
   type: BookmarkType
   refId: number
+  summary?: string
+  url?: string
   createdAt: string
 }
 
@@ -47,10 +51,10 @@ export function useBookmarks(type?: BookmarkType) {
 
   // Fetch authenticated user bookmarks
   useEffect(() => {
-    if (status === 'authenticated' && session?.user) {
+    if (status === 'authenticated' && session?.user?.id) {
       fetchBookmarks()
     }
-  }, [session, status, type])
+  }, [session?.user?.id, status, type])
 
   const fetchBookmarks = async () => {
     try {
@@ -233,11 +237,30 @@ export function useBookmarks(type?: BookmarkType) {
   }
 
   return {
-    bookmarks: status === 'authenticated' ? bookmarks : localBookmarks.map((b, i) => ({
-      id: i,
-      userId: 'guest',
-      ...b
-    })),
+    bookmarks: status === 'authenticated' ? bookmarks : localBookmarks.map((b: any, i) => {
+      // Convert guest bookmark format to match authenticated format
+      const summary = b.type === 'AYAH'
+        ? JSON.stringify({
+            surahName: b.surahName,
+            surahNumber: b.surahNumber,
+            ayahNumber: b.ayahNumber,
+            arabicText: b.arabicText
+          })
+        : JSON.stringify({
+            duaName: b.duaName,
+            duaArabic: b.duaArabic
+          })
+
+      return {
+        id: i,
+        userId: 'guest',
+        type: b.type,
+        refId: b.refId,
+        summary: summary,
+        url: b.url || null,
+        createdAt: b.createdAt
+      }
+    }),
     loading,
     isBookmarked,
     toggleBookmark,

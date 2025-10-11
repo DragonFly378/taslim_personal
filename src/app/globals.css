@@ -79,15 +79,19 @@
 }
 
 /* Arabic Font Configuration */
-@font-face {
-  font-family: 'Arabic';
-  src: local('Traditional Arabic'), local('Amiri'), local('Scheherazade New'), local('Scheherazade'), local('Noto Naskh Arabic'), local('Arial');
-  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
-  font-display: swap;
+.font-arabic {
+  font-family: var(--font-amiri), 'Amiri', 'Traditional Arabic', 'Noto Naskh Arabic', serif;
+  font-weight: 400;
+  line-height: 2;
+  letter-spacing: 0;
+  font-feature-settings: 'liga' 1, 'calt' 1, 'kern' 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-.font-arabic {
-  font-family: 'Arabic', 'Amiri', 'Scheherazade New', 'Traditional Arabic', 'Noto Naskh Arabic', serif;
+.font-scheherazade {
+  font-family: var(--font-scheherazade), 'Scheherazade New', 'Traditional Arabic', 'Noto Naskh Arabic', serif;
   font-weight: 400;
   line-height: 2;
   letter-spacing: 0;
@@ -181,8 +185,48 @@ html {
   }
 }
 
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes gradient {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
 .animate-fade-in {
   animation: fade-in 1s ease-out;
+}
+
+.animate-shimmer {
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 3s ease infinite;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 .delay-200 {

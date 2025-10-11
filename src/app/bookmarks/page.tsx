@@ -1,23 +1,85 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useBookmarks } from '@/hooks/useBookmarks'
 import { useLanguage } from '@/lib/i18n/LanguageContext'
-import { BookOpen, BookMarked, LogIn } from 'lucide-react'
+import { BookOpen, BookMarked, LogIn, Lock } from 'lucide-react'
 import { signIn } from 'next-auth/react'
+import { BookmarkCard } from '@/components/BookmarkCard'
+import { useState, useEffect } from 'react'
+import { useToast } from '@/hooks/use-toast'
 
 export default function BookmarksPage() {
+  const router = useRouter()
   const { status } = useSession()
   const { bookmarks, loading } = useBookmarks()
   const { t } = useLanguage()
+  const { toast } = useToast()
+  const [localBookmarks, setLocalBookmarks] = useState(bookmarks)
 
-  const ayahBookmarks = bookmarks.filter(b => b.type === 'AYAH')
-  const duaBookmarks = bookmarks.filter(b => b.type === 'DUA')
+  // Redirect unauthenticated users to sign in page
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.replace('/auth/signin?callbackUrl=/bookmarks')
+    }
+  }, [status, router])
 
-  if (loading) {
+  // Don't render content for unauthenticated users
+  if (status === 'unauthenticated') {
+    return null
+  }
+
+  const ayahBookmarks = localBookmarks.filter(b => b.type === 'AYAH')
+  const duaBookmarks = localBookmarks.filter(b => b.type === 'DUA')
+
+  // Update local bookmarks when bookmarks change
+  useEffect(() => {
+    setLocalBookmarks(bookmarks)
+  }, [bookmarks])
+
+  const handleRemoveBookmark = async (bookmarkId: number) => {
+    // Optimistically remove from UI
+    setLocalBookmarks(prev => prev.filter(b => b.id !== bookmarkId))
+
+    try {
+      if (status === 'authenticated') {
+        const response = await fetch(`/api/bookmarks/${bookmarkId}`, {
+          method: 'DELETE'
+        })
+
+        if (!response.ok) throw new Error('Failed to remove bookmark')
+      } else {
+        // Guest mode - remove from localStorage
+        const bookmark = bookmarks.find(b => b.id === bookmarkId)
+        if (bookmark) {
+          const stored = localStorage.getItem('taslim_guest_bookmarks')
+          if (stored) {
+            const guestBookmarks = JSON.parse(stored)
+            const updated = guestBookmarks.filter(
+              (b: any) => !(b.refId === bookmark.refId && b.type === bookmark.type)
+            )
+            localStorage.setItem('taslim_guest_bookmarks', JSON.stringify(updated))
+          }
+        }
+      }
+
+      toast({
+        title: 'Bookmark removed',
+        description: 'Successfully removed from your bookmarks'
+      })
+    } catch (error) {
+      // Rollback on error
+      setLocalBookmarks(bookmarks)
+      throw error
+    }
+  }
+
+  // Show loading while checking auth or redirecting
+  if (loading || status === 'loading' || status === 'unauthenticated') {
     return (
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl md:text-4xl font-bold mb-6 gradient-text">
@@ -38,31 +100,6 @@ export default function BookmarksPage() {
         <h1 className="text-3xl md:text-4xl font-bold mb-3 gradient-text">
           {t.nav.bookmarks}
         </h1>
-        {status === 'unauthenticated' && bookmarks.length > 0 && (
-          <Card className="border-amber-500/50 bg-amber-500/5">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <LogIn className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-amber-900 dark:text-amber-100 mb-2">
-                    {t.common.guestMode || 'Guest Mode'}
-                  </p>
-                  <p className="text-sm text-amber-800 dark:text-amber-200 mb-3">
-                    Your bookmarks are stored locally. Sign in to sync them across devices and keep them safe.
-                  </p>
-                  <Button
-                    size="sm"
-                    onClick={() => signIn()}
-                    className="bg-amber-600 hover:bg-amber-700 text-white"
-                  >
-                    <LogIn className="mr-2 h-4 w-4" />
-                    Sign In to Sync
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
 
       {bookmarks.length === 0 ? (
@@ -73,12 +110,6 @@ export default function BookmarksPage() {
             <p className="text-muted-foreground mb-6">
               Start reading and bookmark your favorite ayahs and duas!
             </p>
-            {status === 'unauthenticated' && (
-              <Button onClick={() => signIn()} variant="outline">
-                <LogIn className="mr-2 h-4 w-4" />
-                Sign In
-              </Button>
-            )}
           </CardContent>
         </Card>
       ) : (
@@ -98,19 +129,21 @@ export default function BookmarksPage() {
             {ayahBookmarks.length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center">
+                  <BookOpen className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" />
                   <p className="text-muted-foreground">No ayah bookmarks yet</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Start reading Quran and bookmark your favorite ayahs
+                  </p>
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {ayahBookmarks.map((bookmark) => (
-                  <Card key={bookmark.id}>
-                    <CardContent className="p-4">
-                      <p className="text-sm text-muted-foreground">
-                        Ayah ID: {bookmark.refId}
-                      </p>
-                    </CardContent>
-                  </Card>
+                  <BookmarkCard
+                    key={bookmark.id}
+                    bookmark={bookmark}
+                    onRemove={handleRemoveBookmark}
+                  />
                 ))}
               </div>
             )}
@@ -120,19 +153,21 @@ export default function BookmarksPage() {
             {duaBookmarks.length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center">
+                  <BookMarked className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" />
                   <p className="text-muted-foreground">No dua bookmarks yet</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Explore duas and save your favorites
+                  </p>
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {duaBookmarks.map((bookmark) => (
-                  <Card key={bookmark.id}>
-                    <CardContent className="p-4">
-                      <p className="text-sm text-muted-foreground">
-                        Dua ID: {bookmark.refId}
-                      </p>
-                    </CardContent>
-                  </Card>
+                  <BookmarkCard
+                    key={bookmark.id}
+                    bookmark={bookmark}
+                    onRemove={handleRemoveBookmark}
+                  />
                 ))}
               </div>
             )}

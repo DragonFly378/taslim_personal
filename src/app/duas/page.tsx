@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { BookMarked } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { BookMarked, Loader2, Download } from 'lucide-react'
 import { DuaSearch } from '@/components/DuaSearch'
 import { useLanguage } from '@/lib/i18n/LanguageContext'
 
@@ -20,8 +22,10 @@ interface Dua {
 
 export default function DuasPage() {
   const { t } = useLanguage()
+  const router = useRouter()
   const [duas, setDuas] = useState<Dua[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingCategory, setLoadingCategory] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadDuas() {
@@ -96,6 +100,39 @@ export default function DuasPage() {
         </div>
       </div>
 
+      {/* Offline Download Banner */}
+      <Link href="/offline" className="block mb-8">
+        <Card className="relative overflow-hidden bg-gradient-to-r from-green-500/10 via-green-600/10 to-green-500/10 border-2 border-green-500/30 hover:border-green-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-green-500/20 group cursor-pointer">
+          <CardContent className="p-6 md:p-8">
+            <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8">
+              <div className="flex-shrink-0">
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/30 group-hover:scale-110 transition-transform duration-300">
+                  <Download className="w-8 h-8 md:w-10 md:h-10 text-white" />
+                </div>
+              </div>
+              <div className="flex-1 text-center md:text-left">
+                <h3 className="text-xl md:text-2xl font-bold text-foreground mb-2">
+                  Download Duas for Offline Access
+                </h3>
+                <p className="text-sm md:text-base text-muted-foreground">
+                  Keep all daily Islamic prayers and supplications available offline
+                </p>
+              </div>
+              <div className="flex-shrink-0">
+                <Button
+                  variant="default"
+                  size="lg"
+                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg shadow-green-500/30"
+                >
+                  <Download className="mr-2 h-5 w-5" />
+                  Download Now
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </Link>
+
       {/* Stats */}
       {loading ? (
         <div className="text-center py-12">
@@ -131,35 +168,56 @@ export default function DuasPage() {
       {/* Categories Grid */}
       {!loading && (
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {categories.map((category, index) => (
-          <Link key={category.slug} href={`/duas/${category.slug}`}>
-            <Card className="h-full card-glow border-2 hover:shadow-xl hover:border-primary/30 transition-all duration-300 group cursor-pointer overflow-hidden">
-              <div className="h-1.5 bg-gradient-to-r from-primary via-secondary to-primary transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
+        {categories.map((category, index) => {
+          const isLoadingThisCategory = loadingCategory === category.slug
 
-              <CardHeader className="pb-3">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20 rounded-xl flex-shrink-0 group-hover:scale-110 transition-transform">
-                    <BookMarked className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <CardTitle className="text-base sm:text-lg mb-1 group-hover:text-primary transition-colors">
-                      {category.name}
-                    </CardTitle>
-                  </div>
-                </div>
-              </CardHeader>
+          return (
+            <div key={category.slug} className="relative">
+              <Link
+                href={`/duas/${category.slug}`}
+                onClick={(e) => {
+                  e.preventDefault()
+                  setLoadingCategory(category.slug)
+                  router.push(`/duas/${category.slug}`)
+                }}
+              >
+                <Card className="h-full card-glow border-2 hover:shadow-xl hover:border-primary/30 transition-all duration-300 group cursor-pointer overflow-hidden">
+                  {isLoadingThisCategory && (
+                    <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg">
+                      <div className="flex flex-col items-center gap-2">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        <p className="text-sm text-muted-foreground">Loading...</p>
+                      </div>
+                    </div>
+                  )}
+                  <div className="h-1.5 bg-gradient-to-r from-primary via-secondary to-primary transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
 
-              <CardContent>
-                <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                  <span className="font-medium">
-                    {category.count} {category.count === 1 ? 'Dua' : 'Duas'}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20 rounded-xl flex-shrink-0 group-hover:scale-110 transition-transform">
+                        <BookMarked className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <CardTitle className="text-base sm:text-lg mb-1 group-hover:text-primary transition-colors">
+                          {category.name}
+                        </CardTitle>
+                      </div>
+                    </div>
+                  </CardHeader>
+
+                  <CardContent>
+                    <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                      <span className="font-medium">
+                        {category.count} {category.count === 1 ? 'Dua' : 'Duas'}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            </div>
+          )
+        })}
       </div>
       )}
     </div>

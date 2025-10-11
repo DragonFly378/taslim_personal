@@ -3,14 +3,33 @@
 export interface GuestBookmark {
   type: 'AYAH' | 'DUA'
   refId: number
+  // Metadata for Ayah
+  surahName?: string
+  surahNumber?: number
+  ayahNumber?: number
+  arabicText?: string
+  // Metadata for Dua
+  duaName?: string
+  duaArabic?: string
+  // Common
+  url: string
   createdAt: string
 }
 
 export interface GuestLastRead {
   type: 'QURAN' | 'DUA'
+  // For Quran
   surahId?: number
+  surahName?: string
+  surahNumber?: number
   ayahNumber?: number
+  arabicText?: string
+  // For Dua
   duaId?: number
+  duaName?: string
+  duaArabic?: string
+  // Common
+  url: string
   updatedAt: string
 }
 
@@ -51,9 +70,9 @@ export function getGuestLastRead(type: 'QURAN' | 'DUA'): GuestLastRead | null {
   return stored ? JSON.parse(stored) : null
 }
 
-export function setGuestLastRead(lastRead: Omit<GuestLastRead, 'updatedAt'>): void {
-  const data = { ...lastRead, updatedAt: new Date().toISOString() }
-  localStorage.setItem(`${GUEST_LAST_READ_KEY}_${lastRead.type}`, JSON.stringify(data))
+export function updateGuestLastRead(type: 'QURAN' | 'DUA', data: Omit<GuestLastRead, 'type' | 'updatedAt'>): void {
+  const lastRead = { type, ...data, updatedAt: new Date().toISOString() }
+  localStorage.setItem(`${GUEST_LAST_READ_KEY}_${type}`, JSON.stringify(lastRead))
 }
 
 export function clearGuestLastReads(): void {

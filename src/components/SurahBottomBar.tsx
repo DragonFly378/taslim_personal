@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight, Hash } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Hash, List } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -113,7 +113,7 @@ export function SurahBottomBar({ currentSurah, previousSurah, nextSurah }: Surah
             </div>
 
             {/* Bottom Row - Navigation Buttons */}
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-4 gap-2">
               {/* Previous Button */}
               {previousSurah ? (
                 <Link
@@ -193,6 +193,16 @@ export function SurahBottomBar({ currentSurah, previousSurah, nextSurah }: Surah
                 </DropdownMenuContent>
               </DropdownMenu>
 
+              {/* All Surahs Button */}
+              <Link
+                href="/quran"
+                className="flex flex-col items-center justify-center px-2 py-2 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 transition-all active:scale-95"
+                title="All Surahs"
+              >
+                <List className="h-5 w-5 text-purple-600 mb-1" />
+                <span className="text-xs font-medium text-foreground">All</span>
+              </Link>
+
               {/* Next Button */}
               {nextSurah ? (
                 <Link
@@ -230,6 +240,18 @@ export function SurahBottomBar({ currentSurah, previousSurah, nextSurah }: Surah
 
             {/* Right - Navigation Buttons */}
             <div className="flex items-center gap-2 flex-shrink-0">
+              {/* All Surahs Button */}
+              <Link
+                href="/quran"
+                className="flex items-center gap-2 px-4 py-3 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border-2 border-purple-500/30 transition-all group"
+                title="All Surahs"
+              >
+                <List className="h-5 w-5 text-purple-600 flex-shrink-0" />
+                <div className="min-w-0">
+                  <div className="font-semibold text-sm text-foreground">All Surahs</div>
+                </div>
+              </Link>
+
               {/* Jump to Ayah Button */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
