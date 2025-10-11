@@ -7,12 +7,16 @@ import { z } from 'zod'
 const quranLastReadSchema = z.object({
   type: z.literal('QURAN'),
   surahId: z.number().int().positive(),
-  ayahNumber: z.number().int().positive()
+  ayahNumber: z.number().int().positive(),
+  summary: z.string().optional().nullable(),
+  url: z.string().optional().nullable()
 })
 
 const duaLastReadSchema = z.object({
   type: z.literal('DUA'),
-  duaId: z.number().int().positive()
+  duaId: z.number().int().positive(),
+  summary: z.string().optional().nullable(),
+  url: z.string().optional().nullable()
 })
 
 const lastReadSchema = z.union([quranLastReadSchema, duaLastReadSchema])
@@ -39,7 +43,11 @@ export async function GET(request: NextRequest) {
       where
     })
 
-    return NextResponse.json(lastRead)
+    return NextResponse.json(lastRead, {
+      headers: {
+        'Cache-Control': 'private, max-age=60, stale-while-revalidate=120',
+      },
+    })
   } catch (error) {
     console.error('Error fetching last read:', error)
     return NextResponse.json(
@@ -64,7 +72,9 @@ export async function PUT(request: NextRequest) {
 
     const data: any = {
       userId: session.user.id,
-      type: validated.type
+      type: validated.type,
+      summary: validated.summary || null,
+      url: validated.url || null
     }
 
     if (validated.type === 'QURAN') {

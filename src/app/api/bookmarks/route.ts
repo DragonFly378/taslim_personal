@@ -6,7 +6,9 @@ import { z } from 'zod'
 
 const bookmarkSchema = z.object({
   type: z.enum(['AYAH', 'DUA']),
-  refId: z.number().int().positive()
+  refId: z.number().int().positive(),
+  summary: z.string().optional().nullable(),
+  url: z.string().optional().nullable()
 })
 
 export async function GET(request: NextRequest) {
@@ -32,7 +34,11 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' }
     })
 
-    return NextResponse.json(bookmarks)
+    return NextResponse.json(bookmarks, {
+      headers: {
+        'Cache-Control': 'private, s-maxage=30, stale-while-revalidate=60',
+      },
+    })
   } catch (error) {
     console.error('Error fetching bookmarks:', error)
     return NextResponse.json(
@@ -59,7 +65,9 @@ export async function POST(request: NextRequest) {
       data: {
         userId: session.user.id,
         type: validated.type,
-        refId: validated.refId
+        refId: validated.refId,
+        summary: validated.summary || null,
+        url: validated.url || null
       }
     })
 

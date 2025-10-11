@@ -89,7 +89,7 @@ export default function DuaCategoryPage({ params }: { params: Promise<{ slug: st
       {/* Duas List */}
       <div className="space-y-6 mb-8">
         {categoryDuas.map((dua) => (
-          <DuaCard key={dua.id} dua={dua} />
+          <DuaCard key={dua.id} dua={dua} categorySlug={resolvedParams.slug} />
         ))}
       </div>
 

@@ -4,17 +4,19 @@ import { ReactNode, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import {
   BookOpen,
   Heart,
   Home,
-  BookMarked,
   Menu,
   LogIn,
   LogOut,
   User,
   Languages,
+  Hand,
+  Settings,
+  UserCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +25,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import {
   Sheet,
@@ -30,6 +33,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { UserAvatar } from "@/components/UserAvatar";
+import { AutoOfflineDownload } from "@/components/AutoOfflineDownload";
 
 interface AppShellProps {
   children: ReactNode;
@@ -44,8 +49,9 @@ export function AppShell({ children }: AppShellProps) {
   const navItems = [
     { href: "/", icon: Home, label: t.nav.home },
     { href: "/quran", icon: BookOpen, label: t.nav.quran },
-    { href: "/duas", icon: BookMarked, label: t.nav.duas },
-    { href: "/bookmarks", icon: Heart, label: t.nav.bookmarks },
+    { href: "/duas", icon: Hand, label: t.nav.duas },
+    // Bookmarks hidden - requires backend auth
+    // { href: "/bookmarks", icon: Heart, label: t.nav.bookmarks },
   ];
 
   // Close mobile menu when pathname changes
@@ -107,56 +113,7 @@ export function AppShell({ children }: AppShellProps) {
               </span>
             </Button>
 
-            {/* User Avatar/Sign In - Desktop Only */}
-            {status === "loading" ? (
-              <div className="h-10 w-10 rounded-full bg-muted animate-pulse hidden md:block" />
-            ) : session?.user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="rounded-full h-10 w-10 hidden md:flex"
-                  >
-                    {session.user.image ? (
-                      <img
-                        src={session.user.image}
-                        alt={session.user.name || "User"}
-                        className="h-10 w-10 rounded-full"
-                      />
-                    ) : (
-                      <User className="h-6 w-6" />
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem disabled>
-                    <User className="mr-2 h-4 w-4" />
-                    <span className="text-sm">
-                      {session.user.name || session.user.email}
-                    </span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => signOut()}
-                    className="text-sm"
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    {t.nav.signOut}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => signIn()}
-                className="hidden md:flex"
-              >
-                <LogIn className="mr-2 h-5 w-5" />
-                <span className="text-base">{t.nav.signIn}</span>
-              </Button>
-            )}
+            {/* Auth UI Hidden - No Backend */}
 
             {/* Mobile Menu - Fullscreen */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -184,58 +141,7 @@ export function AppShell({ children }: AppShellProps) {
                   </Link>
                 </div>
 
-                {/* User Section */}
-                {status === "loading" ? (
-                  <div className="px-6 py-6 border-b">
-                    <div className="flex items-center gap-4">
-                      <div className="h-14 w-14 rounded-full bg-muted animate-pulse" />
-                      <div className="flex-1 space-y-2">
-                        <div className="h-4 w-32 bg-muted animate-pulse rounded" />
-                        <div className="h-3 w-24 bg-muted animate-pulse rounded" />
-                      </div>
-                    </div>
-                  </div>
-                ) : session?.user ? (
-                  <div className="px-6 py-6 border-b bg-muted/30">
-                    <div className="flex items-center gap-4">
-                      {session.user.image ? (
-                        <img
-                          src={session.user.image}
-                          alt={session.user.name || "User"}
-                          className="h-14 w-14 rounded-full ring-2 ring-primary/20"
-                        />
-                      ) : (
-                        <div className="h-14 w-14 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center ring-2 ring-primary/20">
-                          <User className="h-8 w-8 text-white" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-base font-semibold truncate">
-                          {session.user.name || "User"}
-                        </p>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {session.user.email}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="px-6 py-6 border-b bg-muted/30">
-                    <div className="flex items-center gap-3">
-                      <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
-                        <User className="h-6 w-6 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">
-                          {t.common.guestMode}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Sign in to sync your data
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                {/* User Section - Hidden (No Backend Auth) */}
 
                 {/* Navigation Links */}
                 <nav className="flex-1 px-6 py-6 space-y-2 overflow-y-auto">
@@ -280,26 +186,7 @@ export function AppShell({ children }: AppShellProps) {
                     </div>
                   </button>
 
-                  {/* Auth Button */}
-                  {session?.user ? (
-                    <button
-                      type="button"
-                      onClick={() => signOut()}
-                      className="flex items-center gap-4 px-4 py-3 rounded-xl w-full text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
-                    >
-                      <LogOut className="h-6 w-6 flex-shrink-0" />
-                      <span className="text-base font-semibold">{t.nav.signOut}</span>
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => signIn()}
-                      className="flex items-center gap-4 px-4 py-3 rounded-xl w-full bg-gradient-to-r from-primary to-secondary text-white hover:shadow-lg hover:shadow-primary/20 transition-all"
-                    >
-                      <LogIn className="h-6 w-6 flex-shrink-0" />
-                      <span className="text-base font-bold">{t.nav.signIn}</span>
-                    </button>
-                  )}
+                  {/* Auth Buttons Hidden - No Backend */}
                 </div>
               </SheetContent>
             </Sheet>
@@ -315,22 +202,81 @@ export function AppShell({ children }: AppShellProps) {
       </main>
 
       {/* Footer */}
-      <footer className="border-t bg-card mt-auto">
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-muted-foreground">
-              {t.footer.builtWith}
-            </p>
-            <div className="flex gap-4 text-sm text-muted-foreground">
-              <span>{t.footer.copyright}</span>
-              <span>•</span>
-              <span>{t.footer.by}</span>
-              <span>•</span>
-              <span>{t.footer.poweredBy}</span>
+      <footer className="border-t bg-gradient-to-br from-card via-card to-primary/5 mt-auto">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10 md:py-12">
+          {/* Top Section - Logo & Description */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 mb-8">
+            <div className="md:col-span-1">
+              <Link href="/" className="inline-block mb-4">
+                <Image
+                  src="/images/logo_taslim_side.png"
+                  alt="Taslim Logo"
+                  width={150}
+                  height={45}
+                  className="h-auto w-[120px] sm:w-[140px] opacity-90 hover:opacity-100 transition-opacity"
+                />
+              </Link>
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-xs">
+                {t.footer.builtWith}
+              </p>
             </div>
+
+            {/* Quick Links */}
+            <div className="md:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-6 sm:gap-8">
+              <div>
+                <h3 className="text-sm font-semibold text-foreground mb-3 sm:mb-4">Explore</h3>
+                <ul className="space-y-2 sm:space-y-2.5">
+                  <li>
+                    <Link href="/quran" className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5">
+                      <BookOpen className="h-3.5 w-3.5" />
+                      {t.nav.quran}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/duas" className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5">
+                      <Hand className="h-3.5 w-3.5" />
+                      {t.nav.duas}
+                    </Link>
+                  </li>
+                  {/* Bookmarks hidden - requires backend */}
+                </ul>
+              </div>
+
+              {/* Account section hidden - no backend auth */}
+
+              <div>
+                <h3 className="text-sm font-semibold text-foreground mb-3 sm:mb-4">Language</h3>
+                <button
+                  type="button"
+                  onClick={() => setLanguage(language === "en" ? "id" : "en")}
+                  className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"
+                >
+                  <Languages className="h-3.5 w-3.5" />
+                  <span className="text-base">{language === "en" ? "🇮🇩" : "🇬🇧"}</span>
+                  <span>{language === "en" ? "ID" : "EN"}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mb-6" />
+
+          {/* Bottom Section - Copyright */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+            <p className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
+              {t.footer.copyright} • {t.footer.by}
+            </p>
+            <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-2">
+              <span className="text-red-500">♥</span>
+              {t.footer.poweredBy}
+            </p>
           </div>
         </div>
       </footer>
+
+      {/* Auto Offline Download */}
+      <AutoOfflineDownload />
     </div>
   );
 }

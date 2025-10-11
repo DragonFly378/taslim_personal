@@ -1,11 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { Download } from 'lucide-react'
 import { getAllSurahs, EquranSurah } from '@/lib/equran-api'
 import { SurahCard } from '@/components/SurahCard'
 import { QuranSearch } from '@/components/QuranSearch'
 import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { useLanguage } from '@/lib/i18n/LanguageContext'
+import { LastReadBanner } from '@/components/LastReadBanner'
 
 export default function QuranPage() {
   const { t } = useLanguage()
@@ -28,6 +32,9 @@ export default function QuranPage() {
 
   return (
     <div>
+      {/* Last Read Banner */}
+      <LastReadBanner />
+
       {/* Hero Section */}
       <div className="mb-16 relative">
         {/* Animated Background Gradients */}
@@ -62,6 +69,39 @@ export default function QuranPage() {
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
         </div>
       </div>
+
+      {/* Offline Download Banner */}
+      <Link href="/offline" className="block mb-8">
+        <Card className="relative overflow-hidden bg-gradient-to-r from-green-500/10 via-green-600/10 to-green-500/10 border-2 border-green-500/30 hover:border-green-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-green-500/20 group cursor-pointer">
+          <CardContent className="p-6 md:p-8">
+            <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8">
+              <div className="flex-shrink-0">
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/30 group-hover:scale-110 transition-transform duration-300">
+                  <Download className="w-8 h-8 md:w-10 md:h-10 text-white" />
+                </div>
+              </div>
+              <div className="flex-1 text-center md:text-left">
+                <h3 className="text-xl md:text-2xl font-bold text-foreground mb-2">
+                  Download Quran for Offline Reading
+                </h3>
+                <p className="text-sm md:text-base text-muted-foreground">
+                  Access all 114 surahs anytime, anywhere - even without internet connection
+                </p>
+              </div>
+              <div className="flex-shrink-0">
+                <Button
+                  variant="default"
+                  size="lg"
+                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg shadow-green-500/30"
+                >
+                  <Download className="mr-2 h-5 w-5" />
+                  Download Now
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </Link>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">

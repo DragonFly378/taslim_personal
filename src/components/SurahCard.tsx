@@ -1,8 +1,11 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Loader2 } from 'lucide-react'
 
 interface SurahCardProps {
   surah: {
@@ -19,10 +22,27 @@ interface SurahCardProps {
 }
 
 export function SurahCard({ surah, lastReadAyah, onResume }: SurahCardProps) {
+  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    router.push(`/quran/${surah.id}`)
+  }
+
   return (
-    <Card className="group card-glow border-2 hover:border-primary/30 transition-all duration-300">
+    <Card className="group card-glow border-2 hover:border-primary/30 transition-all duration-300 relative">
+      {isLoading && (
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg">
+          <div className="flex flex-col items-center gap-2">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">Loading...</p>
+          </div>
+        </div>
+      )}
       <CardContent className="p-4 sm:p-6">
-        <Link href={`/quran/${surah.id}`} className="block">
+        <Link href={`/quran/${surah.id}`} onClick={handleClick} className="block">
           <div className="flex justify-between items-start gap-3 sm:gap-4">
             <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
               <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-gradient-to-br from-primary to-secondary rounded-xl text-white font-bold text-base sm:text-lg shadow-md group-hover:scale-110 transition-transform duration-300 flex-shrink-0">

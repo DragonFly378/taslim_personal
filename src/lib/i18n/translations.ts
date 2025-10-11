@@ -8,6 +8,7 @@ export const translations = {
       bookmarks: 'Bookmarks',
       signIn: 'Sign in',
       signOut: 'Sign out',
+      register: 'Register',
     },
 
     // Homepage
@@ -135,7 +136,11 @@ export const translations = {
         checkEmail: 'Check your email',
         emailSent: 'We sent you a sign-in link to',
         note: 'By signing in, you can sync your bookmarks and reading progress across all your devices.',
-        guestNote: 'Guest mode is still available without signing in!'
+        guestNote: 'Guest mode is still available without signing in!',
+        noAccount: "Don't have an account?",
+        invalidCredentials: 'Invalid email or password',
+        errorOccurred: 'An error occurred. Please try again.',
+        signingIn: 'Signing in...'
       },
       register: {
         title: 'Create Account',
@@ -167,7 +172,9 @@ export const translations = {
           passwordRequired: 'Password is required',
           passwordMin: 'Password must be at least 8 characters',
           retypePasswordRequired: 'Please retype your password',
-          passwordMismatch: 'Passwords do not match'
+          passwordMismatch: 'Passwords do not match',
+          registrationFailed: 'Registration failed',
+          errorOccurred: 'An error occurred. Please try again.'
         }
       },
       error: {
@@ -205,6 +212,7 @@ export const translations = {
       bookmarks: 'Bookmark',
       signIn: 'Masuk',
       signOut: 'Keluar',
+      register: 'Daftar',
     },
 
     // Halaman Utama
@@ -332,7 +340,11 @@ export const translations = {
         checkEmail: 'Periksa email Anda',
         emailSent: 'Kami telah mengirim tautan masuk ke',
         note: 'Dengan masuk, Anda dapat menyinkronkan favorit dan progres bacaan di semua perangkat.',
-        guestNote: 'Mode tamu tetap tersedia tanpa perlu masuk!'
+        guestNote: 'Mode tamu tetap tersedia tanpa perlu masuk!',
+        noAccount: 'Belum punya akun?',
+        invalidCredentials: 'Email atau kata sandi salah',
+        errorOccurred: 'Terjadi kesalahan. Silakan coba lagi.',
+        signingIn: 'Sedang masuk...'
       },
       register: {
         title: 'Buat Akun',
@@ -364,7 +376,9 @@ export const translations = {
           passwordRequired: 'Kata sandi harus diisi',
           passwordMin: 'Kata sandi minimal 8 karakter',
           retypePasswordRequired: 'Silakan ulangi kata sandi Anda',
-          passwordMismatch: 'Kata sandi tidak cocok'
+          passwordMismatch: 'Kata sandi tidak cocok',
+          registrationFailed: 'Registrasi gagal',
+          errorOccurred: 'Terjadi kesalahan. Silakan coba lagi.'
         }
       },
       error: {

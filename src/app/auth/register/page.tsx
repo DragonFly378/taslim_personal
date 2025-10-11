@@ -6,8 +6,10 @@ import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { BookOpen, User, Mail, Lock, CheckCircle2 } from 'lucide-react'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 export default function RegisterPage() {
+  const { t } = useLanguage()
   const router = useRouter()
   const [formData, setFormData] = useState({
     fullName: '',
@@ -22,54 +24,81 @@ export default function RegisterPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
+    const newFormData = { ...formData, [name]: value }
+    setFormData(newFormData)
+
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }))
     }
+
+    // Real-time validation for password match
+    if (name === 'password' || name === 'retypePassword') {
+      // Check if passwords match when both fields have values
+      if (newFormData.password && newFormData.retypePassword) {
+        if (newFormData.password === newFormData.retypePassword) {
+          setErrors(prev => ({ ...prev, retypePassword: '' }))
+        } else if (errors.retypePassword !== t.auth.register.errors.passwordMismatch) {
+          setErrors(prev => ({
+            ...prev,
+            retypePassword: t.auth.register.errors.passwordMismatch
+          }))
+        }
+      }
+    }
   }
 
-  const validate = () => {
+  const validate = (showAllErrors = true) => {
     const newErrors: Record<string, string> = {}
 
     if (!formData.fullName.trim()) {
-      newErrors.fullName = 'Full name is required'
+      newErrors.fullName = t.auth.register.errors.fullNameRequired
     } else if (formData.fullName.trim().length < 3) {
-      newErrors.fullName = 'Full name must be at least 3 characters'
+      newErrors.fullName = t.auth.register.errors.fullNameMin
     }
 
     if (!formData.gender) {
-      newErrors.gender = 'Please select your gender'
+      newErrors.gender = t.auth.register.errors.genderRequired
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required'
+      newErrors.email = t.auth.register.errors.emailRequired
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address'
+      newErrors.email = t.auth.register.errors.emailInvalid
     }
 
     if (!formData.password) {
-      newErrors.password = 'Password is required'
+      newErrors.password = t.auth.register.errors.passwordRequired
     } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters'
+      newErrors.password = t.auth.register.errors.passwordMin
     }
 
-    if (!formData.retypePassword) {
-      newErrors.retypePassword = 'Please retype your password'
-    } else if (formData.password !== formData.retypePassword) {
-      newErrors.retypePassword = 'Passwords do not match'
+    // Always validate retype password if either password field has a value
+    if (formData.password || formData.retypePassword) {
+      if (!formData.retypePassword) {
+        newErrors.retypePassword = t.auth.register.errors.retypePasswordRequired
+      } else if (formData.password !== formData.retypePassword) {
+        newErrors.retypePassword = t.auth.register.errors.passwordMismatch
+      }
     }
 
-    setErrors(newErrors)
+    if (showAllErrors) {
+      setErrors(newErrors)
+    }
     return Object.keys(newErrors).length === 0
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('Form submitted', formData)
 
-    if (!validate()) return
+    if (!validate()) {
+      console.log('Validation failed', errors)
+      return
+    }
 
     setIsLoading(true)
+    console.log('Submitting to API...')
 
     try {
       const response = await fetch('/api/auth/register', {
@@ -86,7 +115,7 @@ export default function RegisterPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        setErrors({ submit: data.error || 'Registration failed' })
+        setErrors({ submit: data.error || t.auth.register.errors.registrationFailed || 'Registration failed' })
         return
       }
 
@@ -95,7 +124,7 @@ export default function RegisterPage() {
         router.push('/auth/signin')
       }, 2000)
     } catch (error) {
-      setErrors({ submit: 'An error occurred. Please try again.' })
+      setErrors({ submit: t.auth.register.errors.errorOccurred || 'An error occurred. Please try again.' })
     } finally {
       setIsLoading(false)
     }
@@ -111,9 +140,9 @@ export default function RegisterPage() {
               <div className="w-16 h-16 flex items-center justify-center bg-gradient-to-br from-primary to-secondary rounded-full mx-auto mb-6 shadow-lg">
                 <CheckCircle2 className="h-8 w-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold mb-3 text-foreground">Registration Successful!</h2>
+              <h2 className="text-2xl font-bold mb-3 text-foreground">{t.auth.register.success}</h2>
               <p className="text-muted-foreground mb-6">
-                Your account has been created. Redirecting to sign in...
+                {t.auth.register.successMessage}
               </p>
             </div>
           </CardContent>
@@ -130,9 +159,9 @@ export default function RegisterPage() {
           <div className="w-16 h-16 flex items-center justify-center bg-gradient-to-br from-primary to-secondary rounded-2xl mx-auto mb-4 shadow-lg">
             <BookOpen className="h-8 w-8 text-white" />
           </div>
-          <CardTitle className="text-2xl">Create Account</CardTitle>
+          <CardTitle className="text-2xl">{t.auth.register.title}</CardTitle>
           <CardDescription className="text-base">
-            Join Taslim to sync your bookmarks and reading progress
+            {t.auth.register.subtitle}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -140,7 +169,7 @@ export default function RegisterPage() {
             {/* Full Name */}
             <div>
               <label htmlFor="fullName" className="block text-sm font-medium mb-2">
-                Full Name <span className="text-destructive">*</span>
+                {t.auth.register.fullName} <span className="text-destructive">{t.common.required}</span>
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -150,7 +179,7 @@ export default function RegisterPage() {
                   name="fullName"
                   value={formData.fullName}
                   onChange={handleChange}
-                  placeholder="Enter your full name"
+                  placeholder={t.auth.register.fullNamePlaceholder}
                   className={`w-full pl-10 pr-4 py-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
                     errors.fullName ? 'border-destructive' : 'border-input'
                   }`}
@@ -164,7 +193,7 @@ export default function RegisterPage() {
             {/* Gender */}
             <div>
               <label htmlFor="gender" className="block text-sm font-medium mb-2">
-                Gender <span className="text-destructive">*</span>
+                {t.auth.register.gender} <span className="text-destructive">{t.common.required}</span>
               </label>
               <select
                 id="gender"
@@ -175,9 +204,9 @@ export default function RegisterPage() {
                   errors.gender ? 'border-destructive' : 'border-input'
                 }`}
               >
-                <option value="">Select gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
+                <option value="">{t.auth.register.genderPlaceholder}</option>
+                <option value="male">{t.auth.register.male}</option>
+                <option value="female">{t.auth.register.female}</option>
               </select>
               {errors.gender && (
                 <p className="text-sm text-destructive mt-1">{errors.gender}</p>
@@ -187,7 +216,7 @@ export default function RegisterPage() {
             {/* Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium mb-2">
-                Email Address <span className="text-destructive">*</span>
+                {t.auth.register.email} <span className="text-destructive">{t.common.required}</span>
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -197,7 +226,7 @@ export default function RegisterPage() {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="you@example.com"
+                  placeholder={t.auth.register.emailPlaceholder}
                   className={`w-full pl-10 pr-4 py-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
                     errors.email ? 'border-destructive' : 'border-input'
                   }`}
@@ -211,7 +240,7 @@ export default function RegisterPage() {
             {/* Password */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium mb-2">
-                Password <span className="text-destructive">*</span>
+                {t.auth.register.password} <span className="text-destructive">{t.common.required}</span>
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -221,7 +250,7 @@ export default function RegisterPage() {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  placeholder="At least 8 characters"
+                  placeholder={t.auth.register.passwordPlaceholder}
                   className={`w-full pl-10 pr-4 py-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
                     errors.password ? 'border-destructive' : 'border-input'
                   }`}
@@ -235,7 +264,7 @@ export default function RegisterPage() {
             {/* Retype Password */}
             <div>
               <label htmlFor="retypePassword" className="block text-sm font-medium mb-2">
-                Retype Password <span className="text-destructive">*</span>
+                {t.auth.register.retypePassword} <span className="text-destructive">{t.common.required}</span>
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -245,7 +274,7 @@ export default function RegisterPage() {
                   name="retypePassword"
                   value={formData.retypePassword}
                   onChange={handleChange}
-                  placeholder="Confirm your password"
+                  placeholder={t.auth.register.retypePasswordPlaceholder}
                   className={`w-full pl-10 pr-4 py-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
                     errors.retypePassword ? 'border-destructive' : 'border-input'
                   }`}
@@ -270,16 +299,16 @@ export default function RegisterPage() {
               size="lg"
               disabled={isLoading}
             >
-              {isLoading ? 'Creating Account...' : 'Create Account'}
+              {isLoading ? t.auth.register.creatingAccount : t.auth.register.createAccount}
             </Button>
           </form>
 
           {/* Sign In Link */}
           <div className="text-center text-sm text-muted-foreground pt-6">
             <p>
-              Already have an account?{' '}
+              {t.auth.register.alreadyHaveAccount}{' '}
               <Link href="/auth/signin" className="text-primary font-semibold hover:underline">
-                Sign in
+                {t.auth.register.signInLink}
               </Link>
             </p>
           </div>

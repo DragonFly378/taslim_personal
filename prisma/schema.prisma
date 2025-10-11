@@ -184,6 +184,8 @@ model Bookmark {
   userId    String
   type      BookmarkType
   refId     Int          // ayahId or duaId
+  summary   String?      @db.Text // Summary of ayah/dua (Arabic text preview)
+  url       String?      @db.VarChar(500) // Direct URL to the item
   createdAt DateTime     @default(now())
 
   user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -205,6 +207,8 @@ model LastRead {
   surahId     Int?
   ayahNumber  Int?
   duaId       Int?
+  summary     String?      @db.Text // Summary of ayah/dua (Arabic text preview)
+  url         String?      @db.VarChar(500) // Direct URL to the item
   updatedAt   DateTime     @updatedAt
 
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)

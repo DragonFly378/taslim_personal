@@ -16,10 +16,11 @@ interface DuaCardProps {
     idn: string
     tentang: string
   }
+  categorySlug?: string
   isBookmarked?: boolean
 }
 
-export function DuaCard({ dua, isBookmarked: initialBookmarked = false }: DuaCardProps) {
+export function DuaCard({ dua, categorySlug, isBookmarked: initialBookmarked = false }: DuaCardProps) {
   const { t } = useLanguage()
   const [isBookmarked, setIsBookmarked] = useState(initialBookmarked)
   const [showMeaning, setShowMeaning] = useState(false)
@@ -42,6 +43,11 @@ export function DuaCard({ dua, isBookmarked: initialBookmarked = false }: DuaCar
             refId={dua.id}
             isBookmarked={isBookmarked}
             onToggle={setIsBookmarked}
+            metadata={{
+              duaName: dua.nama,
+              duaArabic: dua.ar.substring(0, 100) + '...',
+              url: categorySlug ? `/duas/${categorySlug}#dua-${dua.id}` : `/duas#dua-${dua.id}`
+            }}
           />
         </div>
 
