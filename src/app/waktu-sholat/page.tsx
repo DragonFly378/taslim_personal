@@ -17,6 +17,7 @@ export default function WaktuSholatPage() {
   const [location, setLocation] = useState<LocationInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [nextPrayer, setNextPrayer] = useState<{ name: string; time: string; minutesUntil: number } | null>(null)
 
   // Filter states
   const [filterMode, setFilterMode] = useState<'location' | 'city'>('location')
@@ -150,6 +151,24 @@ export default function WaktuSholatPage() {
     getUserLocation()
   }, [])
 
+  // Update next prayer every minute
+  useEffect(() => {
+    if (!prayerData || selectedDate) {
+      setNextPrayer(null)
+      return
+    }
+
+    const updateNextPrayer = () => {
+      const next = getNextPrayer()
+      setNextPrayer(next)
+    }
+
+    updateNextPrayer()
+    const interval = setInterval(updateNextPrayer, 60000) // Update every minute
+
+    return () => clearInterval(interval)
+  }, [prayerData, selectedDate])
+
   const handleCitySearch = () => {
     if (!cityInput.trim() || !countryInput.trim()) {
       setError('Please enter both city and country')
@@ -223,6 +242,62 @@ export default function WaktuSholatPage() {
   const formatTime = (time: string) => {
     // Remove timezone info (e.g., " (WIB)")
     return time.split(' ')[0]
+  }
+
+  // Get the next prayer time
+  const getNextPrayer = () => {
+    if (!prayerData) return null
+
+    const now = new Date()
+    const currentHours = now.getHours()
+    const currentMinutes = now.getMinutes()
+    const currentTimeInMinutes = currentHours * 60 + currentMinutes
+
+    const prayerOrder = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'] as const
+
+    for (const prayer of prayerOrder) {
+      const time = formatTime(prayerData.timings[prayer])
+      const [hours, minutes] = time.split(':').map(Number)
+      const prayerTimeInMinutes = hours * 60 + minutes
+
+      if (prayerTimeInMinutes > currentTimeInMinutes) {
+        return {
+          name: prayer,
+          time,
+          minutesUntil: prayerTimeInMinutes - currentTimeInMinutes
+        }
+      }
+    }
+
+    // If no prayer is found (after Isha), next is Fajr tomorrow
+    const fajrTime = formatTime(prayerData.timings.Fajr)
+    const [hours, minutes] = fajrTime.split(':').map(Number)
+    const fajrTimeInMinutes = hours * 60 + minutes
+    const minutesUntilMidnight = (24 * 60) - currentTimeInMinutes
+
+    return {
+      name: 'Fajr' as const,
+      time: fajrTime,
+      minutesUntil: minutesUntilMidnight + fajrTimeInMinutes
+    }
+  }
+
+  // Format time remaining
+  const formatTimeRemaining = (minutes: number) => {
+    const hours = Math.floor(minutes / 60)
+    const mins = minutes % 60
+
+    if (language === 'en') {
+      if (hours > 0) {
+        return `in ${hours}h ${mins}m`
+      }
+      return `in ${mins}m`
+    } else {
+      if (hours > 0) {
+        return `${hours}j ${mins}m lagi`
+      }
+      return `${mins}m lagi`
+    }
   }
 
   return (
@@ -443,7 +518,9 @@ export default function WaktuSholatPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Globe className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-                      <span className="truncate">{prayerData.date.gregorian.date}</span>
+                      <span className="truncate">
+                        {prayerData.date.gregorian.weekday.en}, {prayerData.date.gregorian.day} {prayerData.date.gregorian.month.en} {prayerData.date.gregorian.year}
+                      </span>
                     </div>
                   </CardDescription>
                 </div>
@@ -474,17 +551,41 @@ export default function WaktuSholatPage() {
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-4">
                 {Object.entries(prayerNames).map(([key, names]) => {
                   const time = prayerData.timings[key as keyof typeof prayerData.timings]
+                  const isNextPrayer = nextPrayer?.name === key
+
                   return (
                     <div
                       key={key}
-                      className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg p-3 sm:p-4 border border-primary/20 hover:shadow-md transition-shadow"
+                      className={`
+                        rounded-lg p-3 sm:p-4 border transition-all duration-300
+                        ${isNextPrayer
+                          ? 'bg-gradient-to-br from-emerald-500 to-teal-600 border-emerald-400 shadow-lg ring-2 ring-emerald-400/50 scale-105'
+                          : 'bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 hover:shadow-md'
+                        }
+                      `}
                     >
-                      <p className="text-xs sm:text-sm font-medium text-muted-foreground mb-1 truncate">
-                        {language === 'en' ? names.en : names.id}
-                      </p>
-                      <p className="text-xl sm:text-2xl font-bold text-primary">
+                      <div className="flex items-center justify-between mb-1">
+                        <p className={`text-xs sm:text-sm font-medium truncate ${
+                          isNextPrayer ? 'text-white' : 'text-muted-foreground'
+                        }`}>
+                          {language === 'en' ? names.en : names.id}
+                        </p>
+                        {isNextPrayer && (
+                          <span className="text-[10px] sm:text-xs font-bold bg-white/90 text-emerald-700 px-1.5 sm:px-2 py-0.5 rounded-full">
+                            {language === 'en' ? 'NEXT' : 'BERIKUTNYA'}
+                          </span>
+                        )}
+                      </div>
+                      <p className={`text-xl sm:text-2xl font-bold ${
+                        isNextPrayer ? 'text-white' : 'text-primary'
+                      }`}>
                         {formatTime(time)}
                       </p>
+                      {isNextPrayer && nextPrayer && (
+                        <p className="text-[10px] sm:text-xs font-medium text-white/90 mt-1">
+                          {formatTimeRemaining(nextPrayer.minutesUntil)}
+                        </p>
+                      )}
                     </div>
                   )
                 })}

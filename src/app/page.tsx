@@ -5,6 +5,7 @@ import { BookOpen, BookMarked, ArrowRight, Globe, Smartphone, Cloud, Lock, Zap, 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useLanguage } from '@/lib/i18n/LanguageContext'
+import PrayerTimesCard from '@/components/PrayerTimesCard'
 
 export default function HomePage() {
   const { t } = useLanguage()
@@ -153,6 +154,11 @@ export default function HomePage() {
           {/* Decorative Bottom Element */}
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
         </div>
+      </div>
+
+      {/* Prayer Times Card */}
+      <div className="mb-8 sm:mb-10 md:mb-12">
+        <PrayerTimesCard />
       </div>
 
       {/* Features Grid */}
