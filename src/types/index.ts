@@ -120,6 +120,78 @@ export interface MergeGuestDataRequest {
   }[]
 }
 
+// Prayer Times types
+export interface PrayerTimes {
+  Fajr: string
+  Sunrise: string
+  Dhuhr: string
+  Asr: string
+  Maghrib: string
+  Isha: string
+}
+
+export interface HijriDate {
+  date: string
+  format: string
+  day: string
+  weekday: {
+    en: string
+    ar: string
+  }
+  month: {
+    number: number
+    en: string
+    ar: string
+  }
+  year: string
+  designation: {
+    abbreviated: string
+    expanded: string
+  }
+}
+
+export interface PrayerTimeResponse {
+  timings: PrayerTimes
+  date: {
+    readable: string
+    timestamp: string
+    hijri: HijriDate
+    gregorian: {
+      date: string
+      format: string
+      day: string
+      weekday: {
+        en: string
+      }
+      month: {
+        number: number
+        en: string
+      }
+      year: string
+      designation: {
+        abbreviated: string
+        expanded: string
+      }
+    }
+  }
+  meta: {
+    latitude: number
+    longitude: number
+    timezone: string
+    method: {
+      id: number
+      name: string
+    }
+  }
+}
+
+export interface LocationInfo {
+  city: string
+  country: string
+  latitude: number
+  longitude: number
+}
+
 // UI Component types
 export interface TranslationPreference {
   id: boolean

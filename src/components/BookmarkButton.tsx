@@ -1,108 +1,100 @@
-"use client";
-import { ToastAction } from "@/components/ui/toast";
-import { Heart, Lock } from "lucide-react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+'use client'
+
+import { Heart, Lock } from 'lucide-react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { useToast } from '@/hooks/use-toast'
+import { ToastAction } from '@/components/ui/toast'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from '@/components/ui/tooltip'
 
 interface BookmarkButtonProps {
-  type: "AYAH" | "DUA";
-  refId: number;
-  isBookmarked: boolean;
-  onToggle: (bookmarked: boolean) => void;
+  type: 'AYAH' | 'DUA'
+  refId: number
+  isBookmarked: boolean
+  onToggle: (bookmarked: boolean) => void
   metadata?: {
     // For Ayah
-    surahName?: string;
-    surahNumber?: number;
-    ayahNumber?: number;
-    arabicText?: string;
+    surahName?: string
+    surahNumber?: number
+    ayahNumber?: number
+    arabicText?: string
     // For Dua
-    duaName?: string;
-    duaArabic?: string;
+    duaName?: string
+    duaArabic?: string
     // Common
-    url: string;
-  };
+    url: string
+  }
 }
 
-export function BookmarkButton({
-  type,
-  refId,
-  isBookmarked,
-  onToggle,
-  metadata,
-}: BookmarkButtonProps) {
-  const { data: session, status } = useSession();
-  const router = useRouter();
-  const { toast } = useToast();
+export function BookmarkButton({ type, refId, isBookmarked, onToggle, metadata }: BookmarkButtonProps) {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  const { toast } = useToast()
 
   const handleToggle = async () => {
     // Redirect to sign in if not authenticated
-
-    toast({
-      title: "Authentication Required",
-      description: "Please sign in to save bookmarks",
-      action: (
-        <ToastAction
-          altText="Sign In"
-          onClick={() =>
-            router.push(
-              "/auth/signin?callbackUrl=" +
-                encodeURIComponent(metadata?.url || "")
-            )
-          }
-        >
-          Sign In
-        </ToastAction>
-      ),
-    });
+    if (status === 'unauthenticated') {
+      toast({
+        title: '🔒 Sign in required',
+        description: 'Please sign in to save bookmarks',
+        action: (
+          <ToastAction
+            altText="Sign In"
+            onClick={() => router.push('/auth/signin?callbackUrl=' + encodeURIComponent(metadata?.url || ''))}
+          >
+            Sign In
+          </ToastAction>
+        )
+      })
+      return
+    }
 
     try {
       // Authenticated user - call API
       if (isBookmarked) {
         const response = await fetch(`/api/bookmarks/${refId}`, {
-          method: "DELETE",
-        });
-        if (!response.ok) throw new Error("Failed to remove bookmark");
+          method: 'DELETE'
+        })
+        if (!response.ok) throw new Error('Failed to remove bookmark')
       } else {
-        const response = await fetch("/api/bookmarks", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        const response = await fetch('/api/bookmarks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             type,
             refId,
             summary: metadata ? JSON.stringify(metadata) : null,
-            url: metadata?.url || null,
-          }),
-        });
-        if (!response.ok) throw new Error("Failed to add bookmark");
+            url: metadata?.url || null
+          })
+        })
+        if (!response.ok) throw new Error('Failed to add bookmark')
       }
 
-      onToggle(!isBookmarked);
+      onToggle(!isBookmarked)
 
       toast({
-        title: isBookmarked ? "Bookmark removed" : "✅ Bookmark added",
+        title: isBookmarked ? 'Bookmark removed' : '✅ Bookmark added',
         description: isBookmarked
-          ? "Removed from your bookmarks"
-          : "Added to your bookmarks",
-      });
+          ? 'Removed from your bookmarks'
+          : 'Added to your bookmarks',
+      })
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to update bookmark",
-        variant: "destructive",
-      });
+        title: 'Error',
+        description: 'Failed to update bookmark',
+        variant: 'destructive'
+      })
     }
-  };
+  }
 
   // Guest user - show disabled button with tooltip
-  if (status === "unauthenticated") {
+  if (status === 'unauthenticated') {
     return (
       <TooltipProvider>
         <Tooltip>
@@ -123,7 +115,7 @@ export function BookmarkButton({
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-    );
+    )
   }
 
   return (
@@ -132,15 +124,13 @@ export function BookmarkButton({
       size="icon"
       onClick={handleToggle}
       className="hover:bg-transparent"
-      aria-label={isBookmarked ? "Remove bookmark" : "Add bookmark"}
+      aria-label={isBookmarked ? 'Remove bookmark' : 'Add bookmark'}
     >
       <Heart
         className={`h-5 w-5 transition-colors ${
-          isBookmarked
-            ? "fill-red-500 text-red-500"
-            : "text-gray-400 hover:text-red-400"
+          isBookmarked ? 'fill-red-500 text-red-500' : 'text-gray-400 hover:text-red-400'
         }`}
       />
     </Button>
-  );
+  )
 }

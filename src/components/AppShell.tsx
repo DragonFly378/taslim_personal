@@ -4,36 +4,21 @@ import { ReactNode, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
 import {
   BookOpen,
-  Heart,
   Home,
   Menu,
-  LogIn,
-  LogOut,
-  User,
   Languages,
   Hand,
-  Settings,
-  UserCircle,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  DropdownMenuLabel,
-} from "@/components/ui/dropdown-menu";
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
-import { UserAvatar } from "@/components/UserAvatar";
 import { AutoOfflineDownload } from "@/components/AutoOfflineDownload";
 
 interface AppShellProps {
@@ -42,7 +27,6 @@ interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
-  const { data: session, status } = useSession();
   const { language, setLanguage, t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -50,8 +34,7 @@ export function AppShell({ children }: AppShellProps) {
     { href: "/", icon: Home, label: t.nav.home },
     { href: "/quran", icon: BookOpen, label: t.nav.quran },
     { href: "/duas", icon: Hand, label: t.nav.duas },
-    // Bookmarks hidden - requires backend auth
-    // { href: "/bookmarks", icon: Heart, label: t.nav.bookmarks },
+    { href: "/waktu-sholat", icon: Clock, label: t.nav.prayerTimes },
   ];
 
   // Close mobile menu when pathname changes
@@ -113,7 +96,7 @@ export function AppShell({ children }: AppShellProps) {
               </span>
             </Button>
 
-            {/* Auth UI Hidden - No Backend */}
+            {/* Auth features hidden in personal version */}
 
             {/* Mobile Menu - Fullscreen */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -141,7 +124,7 @@ export function AppShell({ children }: AppShellProps) {
                   </Link>
                 </div>
 
-                {/* User Section - Hidden (No Backend Auth) */}
+                {/* User Section - Hidden in personal version */}
 
                 {/* Navigation Links */}
                 <nav className="flex-1 px-6 py-6 space-y-2 overflow-y-auto">
@@ -186,7 +169,7 @@ export function AppShell({ children }: AppShellProps) {
                     </div>
                   </button>
 
-                  {/* Auth Buttons Hidden - No Backend */}
+                  {/* Auth Buttons - Hidden in personal version */}
                 </div>
               </SheetContent>
             </Sheet>
@@ -222,7 +205,7 @@ export function AppShell({ children }: AppShellProps) {
             </div>
 
             {/* Quick Links */}
-            <div className="md:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-6 sm:gap-8">
+            <div className="md:col-span-2 grid grid-cols-2 gap-6 sm:gap-8">
               <div>
                 <h3 className="text-sm font-semibold text-foreground mb-3 sm:mb-4">Explore</h3>
                 <ul className="space-y-2 sm:space-y-2.5">
@@ -238,11 +221,15 @@ export function AppShell({ children }: AppShellProps) {
                       {t.nav.duas}
                     </Link>
                   </li>
-                  {/* Bookmarks hidden - requires backend */}
+                  <li>
+                    <Link href="/waktu-sholat" className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5">
+                      <Clock className="h-3.5 w-3.5" />
+                      {t.nav.prayerTimes}
+                    </Link>
+                  </li>
                 </ul>
               </div>
 
-              {/* Account section hidden - no backend auth */}
 
               <div>
                 <h3 className="text-sm font-semibold text-foreground mb-3 sm:mb-4">Language</h3>
