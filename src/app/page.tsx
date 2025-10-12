@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { BookOpen, BookMarked, ArrowRight, Globe, Smartphone, Cloud, Lock, Zap, Users } from 'lucide-react'
+import { BookOpen, BookMarked, ArrowRight, Globe, Smartphone, Cloud, Lock, Zap, Users, Bookmark } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useLanguage } from '@/lib/i18n/LanguageContext'
@@ -22,6 +22,13 @@ export default function HomePage() {
       description: t.home.features.dailyDuas.description,
       href: '/duas',
       gradient: 'from-secondary to-primary'
+    },
+    {
+      icon: Bookmark,
+      title: t.home.features.bookmarks.title,
+      description: t.home.features.bookmarks.description,
+      href: '/bookmarks',
+      gradient: 'from-primary to-secondary'
     }
   ]
 
