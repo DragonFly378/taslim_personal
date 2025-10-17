@@ -166,7 +166,6 @@ export default async function SurahPage({
                   surahId={surahNumber}
                   surahName={surah.namaLatin}
                   showTranslations={{ id: true, en: false }}
-                  showTransliteration={true}
                 />
               </CardContent>
             </Card>

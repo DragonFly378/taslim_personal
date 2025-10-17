@@ -36,7 +36,7 @@ export function AppShell({ children }: AppShellProps) {
     { href: "/quran", icon: BookOpen, label: t.nav.quran },
     { href: "/duas", icon: Hand, label: t.nav.duas },
     { href: "/waktu-sholat", icon: Clock, label: t.nav.prayerTimes },
-    { href: "/bookmarks", icon: Heart, label: t.nav.bookmarks },
+    // { href: "/bookmarks", icon: Heart, label: t.nav.bookmarks },
   ];
 
   // Close mobile menu when pathname changes
@@ -221,12 +221,6 @@ export function AppShell({ children }: AppShellProps) {
                     <Link href="/waktu-sholat" className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5">
                       <Clock className="h-3.5 w-3.5" />
                       {t.nav.prayerTimes}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/bookmarks" className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5">
-                      <Heart className="h-3.5 w-3.5" />
-                      {t.nav.bookmarks}
                     </Link>
                   </li>
                 </ul>
