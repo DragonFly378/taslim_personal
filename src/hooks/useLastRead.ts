@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useSession } from 'next-auth/react'
 import { useToast } from '@/hooks/use-toast'
 
 export type LastReadType = 'QURAN' | 'DUA'
@@ -27,50 +26,24 @@ interface LocalLastRead {
 const GUEST_LAST_READ_KEY = 'taslim_guest_last_read'
 
 export function useLastRead(type: LastReadType) {
-  const { data: session, status } = useSession()
   const { toast } = useToast()
   const [lastRead, setLastRead] = useState<LastRead | LocalLastRead | null>(null)
   const [loading, setLoading] = useState(true)
   const updateTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
-  // Load guest last read from localStorage
+  // Load last read from localStorage
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      const stored = localStorage.getItem(GUEST_LAST_READ_KEY)
-      if (stored) {
-        try {
-          const parsed: Record<string, LocalLastRead> = JSON.parse(stored)
-          setLastRead(parsed[type] || null)
-        } catch (e) {
-          console.error('Failed to parse guest last read:', e)
-        }
+    const stored = localStorage.getItem(GUEST_LAST_READ_KEY)
+    if (stored) {
+      try {
+        const parsed: Record<string, LocalLastRead> = JSON.parse(stored)
+        setLastRead(parsed[type] || null)
+      } catch (e) {
+        console.error('Failed to parse last read:', e)
       }
-      setLoading(false)
     }
-  }, [status, type])
-
-  // Fetch authenticated user last read
-  useEffect(() => {
-    if (status === 'authenticated' && session?.user) {
-      fetchLastRead()
-    }
-  }, [session, status, type])
-
-  const fetchLastRead = async () => {
-    try {
-      setLoading(true)
-      const response = await fetch(`/api/last-read?type=${type}`)
-
-      if (!response.ok) throw new Error('Failed to fetch last read')
-
-      const data = await response.json()
-      setLastRead(data)
-    } catch (error) {
-      console.error('Error fetching last read:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
+    setLoading(false)
+  }, [type])
 
   // Update last read (debounced)
   const updateLastRead = useCallback((data: {
@@ -85,50 +58,7 @@ export function useLastRead(type: LastReadType) {
 
     // Debounce update (wait 1 second after scroll stops)
     updateTimeoutRef.current = setTimeout(async () => {
-      if (status === 'unauthenticated') {
-        // Guest mode - use localStorage
-        const stored = localStorage.getItem(GUEST_LAST_READ_KEY)
-        const allLastReads: Record<string, LocalLastRead> = stored ? JSON.parse(stored) : {}
-
-        const newLastRead: LocalLastRead = {
-          type,
-          ...data,
-          updatedAt: new Date().toISOString(),
-        }
-
-        allLastReads[type] = newLastRead
-        localStorage.setItem(GUEST_LAST_READ_KEY, JSON.stringify(allLastReads))
-        setLastRead(newLastRead)
-      } else {
-        // Authenticated mode
-        try {
-          const response = await fetch('/api/last-read', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              type,
-              ...data,
-            }),
-          })
-
-          if (!response.ok) throw new Error('Failed to update last read')
-
-          const { data: updatedLastRead } = await response.json()
-          setLastRead(updatedLastRead)
-        } catch (error) {
-          console.error('Error updating last read:', error)
-        }
-      }
-    }, 1000)
-  }, [type, status])
-
-  // Mark as last read manually
-  const markAsLastRead = async (data: {
-    surahId?: number
-    ayahNumber?: number
-    duaId?: number
-  }) => {
-    if (status === 'unauthenticated') {
+      // Use localStorage only
       const stored = localStorage.getItem(GUEST_LAST_READ_KEY)
       const allLastReads: Record<string, LocalLastRead> = stored ? JSON.parse(stored) : {}
 
@@ -141,76 +71,32 @@ export function useLastRead(type: LastReadType) {
       allLastReads[type] = newLastRead
       localStorage.setItem(GUEST_LAST_READ_KEY, JSON.stringify(allLastReads))
       setLastRead(newLastRead)
+    }, 1000)
+  }, [type])
 
-      toast({
-        title: 'Last read updated',
-        description: 'Saved locally. Sign in to sync across devices.',
-      })
-    } else {
-      try {
-        const response = await fetch('/api/last-read', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            type,
-            ...data,
-          }),
-        })
+  // Mark as last read manually
+  const markAsLastRead = async (data: {
+    surahId?: number
+    ayahNumber?: number
+    duaId?: number
+  }) => {
+    const stored = localStorage.getItem(GUEST_LAST_READ_KEY)
+    const allLastReads: Record<string, LocalLastRead> = stored ? JSON.parse(stored) : {}
 
-        if (!response.ok) throw new Error('Failed to update last read')
-
-        const { data: updatedLastRead } = await response.json()
-        setLastRead(updatedLastRead)
-
-        toast({
-          title: 'Last read updated',
-          description: 'Progress saved successfully',
-        })
-      } catch (error) {
-        toast({
-          title: 'Error',
-          description: 'Failed to update last read',
-          variant: 'destructive',
-        })
-      }
+    const newLastRead: LocalLastRead = {
+      type,
+      ...data,
+      updatedAt: new Date().toISOString(),
     }
-  }
 
-  // Merge guest last read after login
-  const mergeGuestLastRead = async () => {
-    const guestData = localStorage.getItem(GUEST_LAST_READ_KEY)
-    if (!guestData) return false
+    allLastReads[type] = newLastRead
+    localStorage.setItem(GUEST_LAST_READ_KEY, JSON.stringify(allLastReads))
+    setLastRead(newLastRead)
 
-    try {
-      const guestLastReads: Record<string, LocalLastRead> = JSON.parse(guestData)
-      const guestLastRead = guestLastReads[type]
-
-      if (guestLastRead) {
-        const response = await fetch('/api/last-read', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(guestLastRead),
-        })
-
-        if (response.ok) {
-          // Clear guest data for this type
-          delete guestLastReads[type]
-          if (Object.keys(guestLastReads).length === 0) {
-            localStorage.removeItem(GUEST_LAST_READ_KEY)
-          } else {
-            localStorage.setItem(GUEST_LAST_READ_KEY, JSON.stringify(guestLastReads))
-          }
-
-          await fetchLastRead()
-          return true
-        }
-      }
-
-      return false
-    } catch (error) {
-      console.error('Error merging guest last read:', error)
-      return false
-    }
+    toast({
+      title: 'Last read updated',
+      description: 'Saved locally',
+    })
   }
 
   // Cleanup
@@ -227,7 +113,6 @@ export function useLastRead(type: LastReadType) {
     loading,
     updateLastRead,
     markAsLastRead,
-    mergeGuestLastRead,
   }
 }
 

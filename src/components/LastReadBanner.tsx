@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useSession } from 'next-auth/react'
 import { BookOpen, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -19,47 +18,20 @@ interface LastReadData {
 }
 
 export function LastReadBanner() {
-  const { data: session, status } = useSession()
   const [lastRead, setLastRead] = useState<LastReadData | null>(null)
   const [isVisible, setIsVisible] = useState(true)
 
   useEffect(() => {
     async function loadLastRead() {
-      if (status === 'loading') return
-
-      if (session?.user) {
-        // Fetch from API for authenticated users
-        try {
-          const response = await fetch('/api/last-read?type=QURAN')
-          if (response.ok) {
-            const data = await response.json()
-            if (data && data.summary) {
-              // Parse summary JSON
-              const summaryData = JSON.parse(data.summary)
-              setLastRead({
-                type: 'QURAN',
-                surahId: data.surahId,
-                ayahNumber: data.ayahNumber,
-                surahName: summaryData.surahName,
-                arabicText: summaryData.arabicText,
-                url: data.url
-              })
-            }
-          }
-        } catch (error) {
-          console.error('Failed to fetch last read:', error)
-        }
-      } else {
-        // Get from localStorage for guests
-        const guestData = getGuestLastRead('QURAN')
-        if (guestData) {
-          setLastRead(guestData)
-        }
+      // Get from localStorage
+      const guestData = getGuestLastRead('QURAN')
+      if (guestData) {
+        setLastRead(guestData)
       }
     }
 
     loadLastRead()
-  }, [session?.user?.id, status])
+  }, [])
 
   if (!isVisible || !lastRead || lastRead.type !== 'QURAN') return null
 

@@ -6,6 +6,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   BookOpen,
+  Heart,
   Home,
   Menu,
   Languages,
@@ -35,6 +36,7 @@ export function AppShell({ children }: AppShellProps) {
     { href: "/quran", icon: BookOpen, label: t.nav.quran },
     { href: "/duas", icon: Hand, label: t.nav.duas },
     { href: "/waktu-sholat", icon: Clock, label: t.nav.prayerTimes },
+    { href: "/bookmarks", icon: Heart, label: t.nav.bookmarks },
   ];
 
   // Close mobile menu when pathname changes
@@ -82,21 +84,19 @@ export function AppShell({ children }: AppShellProps) {
           </nav>
 
           {/* User Menu */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             {/* Language Toggle - Desktop Only */}
             <Button
               variant="ghost"
-              size="default"
+              size="sm"
               onClick={() => setLanguage(language === "en" ? "id" : "en")}
-              className="hidden md:flex items-center gap-2 hover:bg-primary/10"
+              className="hidden md:flex items-center gap-1 hover:bg-primary/10 h-8 px-2"
             >
-              <span className="text-lg">{language === "en" ? "🇬🇧" : "🇮🇩"}</span>
-              <span className="text-base font-medium">
+              <span className="text-sm">{language === "en" ? "🇬🇧" : "🇮🇩"}</span>
+              <span className="text-xs font-medium">
                 {language === "en" ? "EN" : "ID"}
               </span>
             </Button>
-
-            {/* Auth features hidden in personal version */}
 
             {/* Mobile Menu - Fullscreen */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -123,8 +123,6 @@ export function AppShell({ children }: AppShellProps) {
                     />
                   </Link>
                 </div>
-
-                {/* User Section - Hidden in personal version */}
 
                 {/* Navigation Links */}
                 <nav className="flex-1 px-6 py-6 space-y-2 overflow-y-auto">
@@ -168,8 +166,6 @@ export function AppShell({ children }: AppShellProps) {
                       </span>
                     </div>
                   </button>
-
-                  {/* Auth Buttons - Hidden in personal version */}
                 </div>
               </SheetContent>
             </Sheet>
@@ -205,7 +201,7 @@ export function AppShell({ children }: AppShellProps) {
             </div>
 
             {/* Quick Links */}
-            <div className="md:col-span-2 grid grid-cols-2 gap-6 sm:gap-8">
+            <div className="md:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-6 sm:gap-8">
               <div>
                 <h3 className="text-sm font-semibold text-foreground mb-3 sm:mb-4">Explore</h3>
                 <ul className="space-y-2 sm:space-y-2.5">
@@ -227,9 +223,14 @@ export function AppShell({ children }: AppShellProps) {
                       {t.nav.prayerTimes}
                     </Link>
                   </li>
+                  <li>
+                    <Link href="/bookmarks" className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5">
+                      <Heart className="h-3.5 w-3.5" />
+                      {t.nav.bookmarks}
+                    </Link>
+                  </li>
                 </ul>
               </div>
-
 
               <div>
                 <h3 className="text-sm font-semibold text-foreground mb-3 sm:mb-4">Language</h3>

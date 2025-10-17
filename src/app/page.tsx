@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { BookOpen, BookMarked, ArrowRight, Globe, Smartphone, Cloud, Lock, Zap, Users, Bookmark } from 'lucide-react'
+import { BookOpen, BookMarked, Heart, ArrowRight, Globe, Smartphone, Cloud, Lock, Zap, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useLanguage } from '@/lib/i18n/LanguageContext'
@@ -25,11 +25,11 @@ export default function HomePage() {
       gradient: 'from-secondary to-primary'
     },
     {
-      icon: Bookmark,
+      icon: Heart,
       title: t.home.features.bookmarks.title,
       description: t.home.features.bookmarks.description,
       href: '/bookmarks',
-      gradient: 'from-primary to-secondary'
+      gradient: 'from-primary/80 to-secondary/80'
     }
   ]
 
@@ -322,6 +322,12 @@ export default function HomePage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <Button asChild size="lg" className="text-sm sm:text-base md:text-lg px-6 sm:px-7 md:px-8 py-5 sm:py-5.5 md:py-6 shadow-lg shadow-primary/20 active:scale-95 sm:hover:scale-105 transition-all w-full sm:w-auto">
+              <Link href="/auth/register">
+                <Users className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                {t.home.cta.createAccount}
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="text-sm sm:text-base md:text-lg px-6 sm:px-7 md:px-8 py-5 sm:py-5.5 md:py-6 border-2 active:scale-95 sm:hover:scale-105 transition-all w-full sm:w-auto">
               <Link href="/quran">
                 <BookOpen className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 {t.home.cta.browseQuran}

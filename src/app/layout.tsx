@@ -1,10 +1,8 @@
 import type { Metadata } from 'next'
 import { Inter, Amiri, Scheherazade_New } from 'next/font/google'
-import { NextAuthProvider } from '@/components/NextAuthProvider'
 import { LanguageProvider } from '@/lib/i18n/LanguageContext'
 import { AppShell } from '@/components/AppShell'
 import { Toaster } from '@/components/ui/toaster'
-import { MergeGuestDataDialog } from '@/components/MergeGuestDataDialog'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -57,15 +55,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} ${amiri.variable} ${scheherazade.variable}`} suppressHydrationWarning>
-        <NextAuthProvider>
-          <LanguageProvider>
-            <AppShell>
-              {children}
-            </AppShell>
-            <Toaster />
-            <MergeGuestDataDialog />
-          </LanguageProvider>
-        </NextAuthProvider>
+        <LanguageProvider>
+          <AppShell>
+            {children}
+          </AppShell>
+          <Toaster />
+        </LanguageProvider>
       </body>
     </html>
   )

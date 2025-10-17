@@ -1,37 +1,19 @@
 'use client'
 
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { useBookmarks } from '@/hooks/useBookmarks'
 import { useLanguage } from '@/lib/i18n/LanguageContext'
-import { BookOpen, BookMarked, LogIn, Lock } from 'lucide-react'
-import { signIn } from 'next-auth/react'
+import { BookOpen, BookMarked } from 'lucide-react'
 import { BookmarkCard } from '@/components/BookmarkCard'
 import { useState, useEffect } from 'react'
 import { useToast } from '@/hooks/use-toast'
 
 export default function BookmarksPage() {
-  const router = useRouter()
-  const { status } = useSession()
   const { bookmarks, loading } = useBookmarks()
   const { t } = useLanguage()
   const { toast } = useToast()
   const [localBookmarks, setLocalBookmarks] = useState(bookmarks)
-
-  // Redirect unauthenticated users to sign in page
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.replace('/auth/signin?callbackUrl=/bookmarks')
-    }
-  }, [status, router])
-
-  // Don't render content for unauthenticated users
-  if (status === 'unauthenticated') {
-    return null
-  }
 
   const ayahBookmarks = localBookmarks.filter(b => b.type === 'AYAH')
   const duaBookmarks = localBookmarks.filter(b => b.type === 'DUA')
@@ -46,24 +28,16 @@ export default function BookmarksPage() {
     setLocalBookmarks(prev => prev.filter(b => b.id !== bookmarkId))
 
     try {
-      if (status === 'authenticated') {
-        const response = await fetch(`/api/bookmarks/${bookmarkId}`, {
-          method: 'DELETE'
-        })
-
-        if (!response.ok) throw new Error('Failed to remove bookmark')
-      } else {
-        // Guest mode - remove from localStorage
-        const bookmark = bookmarks.find(b => b.id === bookmarkId)
-        if (bookmark) {
-          const stored = localStorage.getItem('taslim_guest_bookmarks')
-          if (stored) {
-            const guestBookmarks = JSON.parse(stored)
-            const updated = guestBookmarks.filter(
-              (b: any) => !(b.refId === bookmark.refId && b.type === bookmark.type)
-            )
-            localStorage.setItem('taslim_guest_bookmarks', JSON.stringify(updated))
-          }
+      // Remove from localStorage
+      const bookmark = bookmarks.find(b => b.id === bookmarkId)
+      if (bookmark) {
+        const stored = localStorage.getItem('taslim_guest_bookmarks')
+        if (stored) {
+          const guestBookmarks = JSON.parse(stored)
+          const updated = guestBookmarks.filter(
+            (b: any) => !(b.refId === bookmark.refId && b.type === bookmark.type)
+          )
+          localStorage.setItem('taslim_guest_bookmarks', JSON.stringify(updated))
         }
       }
 
@@ -78,8 +52,8 @@ export default function BookmarksPage() {
     }
   }
 
-  // Show loading while checking auth
-  if (loading || status === 'loading') {
+  // Show loading
+  if (loading) {
     return (
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl md:text-4xl font-bold mb-6 gradient-text">

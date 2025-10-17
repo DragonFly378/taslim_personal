@@ -254,7 +254,7 @@ export default function WaktuSholatPage() {
     const currentTimeInMinutes = currentHours * 60 + currentMinutes
 
     const prayerOrder = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'] as const
-
+ 
     for (const prayer of prayerOrder) {
       const time = formatTime(prayerData.timings[prayer])
       const [hours, minutes] = time.split(':').map(Number)
